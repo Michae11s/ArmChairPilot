@@ -16,11 +16,10 @@
 #define P_MSK  0b00011110
 #define O_MSK  0b00000001
 
-FIFO_Buff<32> i2cBuff; //create a buffer object to hold the write cache
+FIFO_Buff<32> i2cBuff;  //create a buffer object to hold the write cache
+debounce<16> db;        //create switch debounce object
 
 bool sync = true;
-
-debounce<16> db;
 
 void setup()
 {

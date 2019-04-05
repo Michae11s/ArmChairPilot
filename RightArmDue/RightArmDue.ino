@@ -1,5 +1,6 @@
 #include <Keyboard.h>
 #include <Wire.h>
+#include <Debounce.h>
 
 /*
  * Code to utilize a switch board to send keypresses to control DCS
@@ -33,8 +34,6 @@
 
 #define db_delay    45
 
-bool btnState[60]; //true btn up, false btn down
-
 bool GPon = false;
 bool ASon = false;
 bool WCon = true;
@@ -44,6 +43,8 @@ bool WCon = true;
 #define HALF   1
 #define FULL   2
 uint8_t Flaps = HALF;
+
+debounce<65> db;
 
 void setup()
 {
@@ -61,7 +62,7 @@ void setup()
 
    //initalize btnState
    for (int i = 0; i < 60; i++)
-      btnState[i]=true;
+      db.change(i)=true;
 
    //i2c sync
    sync(LEFTARM);
@@ -73,7 +74,7 @@ void setup()
 void loop()
 {
   //GroundPower
-  if(pressed(GroundPower))
+  if(db.change(GroundPower) == DOWN)
   {
     if(!GPon)
     {
@@ -100,7 +101,7 @@ void loop()
   }
 
   //AirSupply
-  if(pressed(AirSupply))
+  if(db.change(AirSupply) == DOWN)
   {
     if(!ASon)
     {
@@ -127,7 +128,7 @@ void loop()
   }
 
   //wheel chocks
-  if(pressed(WheelChock))
+  if(db.change(WheelChock) == DOWN)
   {
     if(!WCon)
     {
@@ -154,38 +155,16 @@ void loop()
   }
 
   //Rearm
-  if(pressed(Rearm))
+  if(db.change(Rearm) == DOWN)
   {
      send(LALT, 0x27); //LALT + '
   }
 
+  if(/* Hook */)
+
+
   Wire.requestFrom(LEFTARM, 32);
   i2c_decode();
-}
-
-bool pressed(int pin)
-{
-  if(!digitalRead(pin))//is button down
-  {
-    if(btnState[pin]){ //button was up
-      delay(db_delay);
-      btnState[pin]=false;
-      return true;
-    }
-    else return false;//btn was down do nothing
-  }
-  else //button is up
-  {
-    if(btnState[pin]){//btn was up do nothing
-      return false;
-    }
-    else //btn was down lets debounce
-    {
-      delay(db_delay);
-      btnState[pin]=true;
-      return false;
-    }
-  }
 }
 
 void sync(int address)
@@ -202,48 +181,48 @@ void i2c_decode()
    uint8_t byt;
    uint8_t device;
    uint8_t pin;
-   uint8_t state;
+   uint8_t status;
    while(Wire.available())
    {
       byt=Wire.read();
       device=(byt & D_MSK) >> 5;
       pin=(byt & P_MSK) >> 1;
-      state=byt & O_MSK;
+      status=byt & O_MSK;
       switch(device)
       {
       case (LEFTARM & 0x0F):
          switch(pin)
          {
          case /**/: //APU start
-            if(state)
+            if(status)
                send(LCTRL, 'S');
             break;
          case /**/: //MISC START
-            if(state)
+            if(status)
                send(LALT, 'S');
             break;
          case /**/: //L Crank
-            if(state)
+            if(status)
                send(LCTRL, 'O');
             break;
          case /**/: //R Crank
-            if(state)
+            if(status)
                send(LALT, 'O');
             break;
          case /**/: //L FUEL
-            if(state)
+            if(status)
                send(LCTRL, 'H');
             else
                send(LCTRL, LSHFT, 'H');
             break;
          case /**/: //R FUEL
-            if(state)
+            if(status)
                send(LALT, 'H');
             else
                send(LALT, LSHFT, 'H');
             break;
          case /**/: //Master Arm
-            if(state)
+            if(status)
                send(LALT, 'A');
             else
                send(LCTRL, 'A');
@@ -255,7 +234,7 @@ void i2c_decode()
             send(LCTRL, LSHFT, 'J');
             break;
          case 5: //Gear Lever
-            if(state) //gear lever down
+            if(status) //gear lever down
             {
                send(LCTRL, 'G');
             }
@@ -265,7 +244,7 @@ void i2c_decode()
             }
             break;
          case 6: //flaps Upper half
-            if(state) //Flaps UP
+            if(status) //Flaps UP
             {
                send(LSHFT, 'F');
                Flaps = UP;
@@ -277,7 +256,7 @@ void i2c_decode()
             }
             break;
          case 7: //flaps lower half
-            if(state) //Flaps Full
+            if(status) //Flaps Full
             {
                send(LCTRL, 'F');
                Flaps = FULL;
@@ -289,7 +268,7 @@ void i2c_decode()
             }
             break;
          case 8: //Jett
-            if(state)
+            if(status)
                send(LSHFT, 'J');
             break;
          }
