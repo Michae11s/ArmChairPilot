@@ -8,9 +8,8 @@
  * Written By Michae1s
  */
 
-//shorthand cuz I'm lazy
+//laziness
 #define ky Keyboard
-#define rA  releaseAll
 
 //create buttons
 #define GroundPower 52
@@ -22,6 +21,7 @@
 #define LCTRL  0x80
 #define LSHFT  0x81
 #define LALT   0x82
+#define KEY_DELAY 50
 
 //I2C defines
 #define ADDR      0x20
@@ -39,6 +39,7 @@ bool GPon = false;
 bool ASon = false;
 bool WCon = true;
 
+//flaps vars
 #define UP     0
 #define HALF   1
 #define FULL   2
@@ -155,10 +156,7 @@ void loop()
   //Rearm
   if(pressed(Rearm))
   {
-    ky.press(0x82); //LAlt
-    ky.press(0x27); //'
-    kdy;
-    ky.releaseAll();
+     send(LALT, 0x27); //LALT + '
   }
 
   Wire.requestFrom(LEFTARM, 32);
@@ -213,66 +211,86 @@ void i2c_decode()
       state=byt & O_MSK;
       switch(device)
       {
-      case 0x01:
+      case (LEFTARM & 0x0F):
          switch(pin)
          {
+         case /**/: //APU start
+            if(state)
+               send(LCTRL, 'S');
+            break;
+         case /**/: //MISC START
+            if(state)
+               send(LALT, 'S');
+            break;
+         case /**/: //L Crank
+            if(state)
+               send(LCTRL, 'O');
+            break;
+         case /**/: //R Crank
+            if(state)
+               send(LALT, 'O');
+            break;
+         case /**/: //L FUEL
+            if(state)
+               send(LCTRL, 'H');
+            else
+               send(LCTRL, LSHFT, 'H');
+            break;
+         case /**/: //R FUEL
+            if(state)
+               send(LALT, 'H');
+            else
+               send(LALT, LSHFT, 'H');
+            break;
+         case /**/: //Master Arm
+            if(state)
+               send(LALT, 'A');
+            else
+               send(LCTRL, 'A');
+            break;
+         case /**/: //ECM JETT
+            send(LCTRL, 'J');
+            break;
+         case 4: //EJETT
+            send(LCTRL, LSHFT, 'J');
+            break;
          case 5: //Gear Lever
             if(state) //gear lever down
             {
-               ky.press(LCTRL);
-               ky.press('G');
-               kdy();
-               ky.releaseAll();
+               send(LCTRL, 'G');
             }
             else //gear lever up
             {
-               ky.press(LSHFT);
-               ky.press('G');
-               kdy();
-               ky.releaseAll();
+               send(LSHFT, 'G');
             }
             break;
          case 6: //flaps Upper half
             if(state) //Flaps UP
             {
-               ky.press(LSHFT);
-               ky.press('F');
-               kdy();
-               ky.rA();
+               send(LSHFT, 'F');
                Flaps = UP;
             }
             else if(Flaps != FULL) //if flaps are full don't do anything
             {
-               ky.press(LALT);
-               ky.press('F');
-               kdy();
-               ky.rA();
+               send(LALT, 'F');
                Flaps = HALF;
             }
             break;
          case 7: //flaps lower half
             if(state) //Flaps Full
             {
-               ky.press(LCTRL);
-               ky.press('F');
-               kdy();
-               ky.rA();
+               send(LCTRL, 'F');
                Flaps = FULL;
             }
-            else if(Flaps != UP) //if flaps are full don't do anything
+            else if(Flaps != UP) //if flaps are up don't do anything
             {
-               ky.press(LALT);
-               ky.press('F');
-               kdy();
-               ky.rA();
+               send(LALT, 'F');
                Flaps = HALF;
             }
             break;
          case 8: //Jett
             if(state)
-            {
-               Keyboard.write('F');
-            }
+               send(LSHFT, 'J');
             break;
          }
          break;
@@ -280,7 +298,26 @@ void i2c_decode()
    }
 }
 
-void kdy()
+void send(char key)
 {
-   delay(50);
+   Keyboard.press(key);
+   delay(KEY_DELAY);
+   Keyboard.releaseAll();
+}
+
+void send(char Mod, char key)
+{
+   Keyboard.press(Mod);
+   Keyboard.press(key);
+   delay(KEY_DELAY);
+   Keyboard.releaseAll();
+}
+
+void send(char Mod,char Modd, char key)
+{
+   Keyboard.press(Mod);
+   Keyboard.press(Modd);
+   Keyboard.press(key);
+   delay(KEY_DELAY);
+   Keyboard.releaseAll();
 }
