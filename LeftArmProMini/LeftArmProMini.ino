@@ -17,6 +17,13 @@
 #define UP     2
 #define NOCNG  0
 
+//I2C Addressing
+#define ADDR   0x21
+#define SYNC   0x99
+#define D_MSK  0b11100000
+#define P_MSK  0b00011110
+#define O_MSK  0b00000001
+
 FIFO_Buff<32> i2cBuff; //create a buffer object to hold the write cache
 
 bool btnState[PINMAX+1];
@@ -53,8 +60,14 @@ void loop()
          Serial.print(i);
          Serial.print(" to: ");
          etch(change);
-         change = change + (i << 4) - 1; //UP will be 1, Down will be 0
-         if(i2cBuff.write(change))
+
+         //build the byte
+         uint8_t device = ((ADDR & 0x0F) << 5) & D_MSK;
+         uint8_t pin = (i << 1) & P_MSK;
+         change = change - 1;
+         uint8_t packet = device | pin | change;
+
+         if(i2cBuff.write(packet))
             Serial.println("Buffer Full");
          Serial.print("byte added to buffer: ");
          Serial.println(change, HEX);
@@ -76,11 +89,17 @@ void requestEvent()
          Serial.print(i);
          Serial.print(" is: ");
          etch(state);
-         state = state + (i << 4) - 1;
-         if(i2cBuff.write(state))
+
+         //build the byte
+         uint8_t device = ((ADDR & 0x0F) << 5) & D_MSK;
+         uint8_t pin = (i << 1) & P_MSK;
+         state = state;
+         uint8_t packet = device | pin | state;
+
+         if(i2cBuff.write(packet))
             Serial.println("Buffer Full");
          Serial.print("byte added to buffer: ");
-         Serial.println(state, HEX);
+         Serial.println(packet, HEX);
          Serial.println();
       }
       sync=false; //clear the flag for the next run
@@ -113,7 +132,7 @@ void receiveEvent(int Many)
 
   switch (cache)
   {
-    case 0x99: //request for all pin updates toss the flag
+    case SYNC: //request for all pin updates toss the flag
       Serial.println("sync request");
       sync = true;
       break;
