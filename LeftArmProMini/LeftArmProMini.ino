@@ -36,7 +36,7 @@ void setup()
    for (int i = 2; i <= 15; i++)
    {
       pinMode(i, INPUT_PULLUP);
-      dp.change(i);
+      db.change(i);
    }
 }
 
@@ -73,7 +73,7 @@ void requestEvent()
    {
       Serial.println("Sending sync data");
       i2cBuff.flush();
-      for(int i = PINMIN; i <= PINMAX; i++)
+      for(int i = 2; i <= 15; i++)
       {
          uint8_t status = db.status(i);
          Serial.print("Pin: ");
@@ -123,7 +123,7 @@ void receiveEvent(int Many)
   switch (cache)
   {
     case SYNC: //request for all pin updates toss the flag
-      Serial.println("sync request");
+      Serial.println(" \n::sync request::\n");
       sync = true;
       break;
   }

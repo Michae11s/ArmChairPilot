@@ -62,7 +62,7 @@ void setup()
 
    //initalize btnState
    for (int i = 0; i < 60; i++)
-      db.change(i)=true;
+      db.change(i);
 
    //i2c sync
    sync(LEFTARM);
@@ -74,7 +74,7 @@ void setup()
 void loop()
 {
   //GroundPower
-  if(db.change(GroundPower) == DOWN)
+  if(db.change(GroundPower) == CLOSE)
   {
     if(!GPon)
     {
@@ -101,7 +101,7 @@ void loop()
   }
 
   //AirSupply
-  if(db.change(AirSupply) == DOWN)
+  if(db.change(AirSupply) == CLOSE)
   {
     if(!ASon)
     {
@@ -128,7 +128,7 @@ void loop()
   }
 
   //wheel chocks
-  if(db.change(WheelChock) == DOWN)
+  if(db.change(WheelChock) == CLOSE)
   {
     if(!WCon)
     {
@@ -155,12 +155,12 @@ void loop()
   }
 
   //Rearm
-  if(db.change(Rearm) == DOWN)
+  if(db.change(Rearm) == CLOSE)
   {
      send(LALT, 0x27); //LALT + '
   }
 
-  if(/* Hook */)
+  //if(/* Hook */)
 
 
   Wire.requestFrom(LEFTARM, 32);
@@ -193,48 +193,48 @@ void i2c_decode()
       case (LEFTARM & 0x0F):
          switch(pin)
          {
-         case /**/: //APU start
-            if(status)
-               send(LCTRL, 'S');
-            break;
-         case /**/: //MISC START
-            if(status)
-               send(LALT, 'S');
-            break;
-         case /**/: //L Crank
-            if(status)
-               send(LCTRL, 'O');
-            break;
-         case /**/: //R Crank
-            if(status)
-               send(LALT, 'O');
-            break;
-         case /**/: //L FUEL
-            if(status)
-               send(LCTRL, 'H');
-            else
-               send(LCTRL, LSHFT, 'H');
-            break;
-         case /**/: //R FUEL
-            if(status)
-               send(LALT, 'H');
-            else
-               send(LALT, LSHFT, 'H');
-            break;
-         case /**/: //Master Arm
-            if(status)
-               send(LALT, 'A');
-            else
-               send(LCTRL, 'A');
-            break;
-         case /**/: //ECM JETT
-            send(LCTRL, 'J');
-            break;
+         // case /**/: //APU start
+         //    if(status)
+         //       send(LCTRL, 'S');
+         //    break;
+         // case /**/: //MISC START
+         //    if(status)
+         //       send(LALT, 'S');
+         //    break;
+         // case /**/: //L Crank
+         //    if(status)
+         //       send(LCTRL, 'O');
+         //    break;
+         // case /**/: //R Crank
+         //    if(status)
+         //       send(LALT, 'O');
+         //    break;
+         // case /**/: //L FUEL
+         //    if(status)
+         //       send(LCTRL, 'H');
+         //    else
+         //       send(LCTRL, LSHFT, 'H');
+         //    break;
+         // case /**/: //R FUEL
+         //    if(status)
+         //       send(LALT, 'H');
+         //    else
+         //       send(LALT, LSHFT, 'H');
+         //    break;
+         // case /**/: //Master Arm
+         //    if(status)
+         //       send(LALT, 'A');
+         //    else
+         //       send(LCTRL, 'A');
+         //    break;
+         // case /**/: //ECM JETT
+         //    send(LCTRL, 'J');
+         //    break;
          case 4: //EJETT
             send(LCTRL, LSHFT, 'J');
             break;
          case 5: //Gear Lever
-            if(status) //gear lever down
+            if(status) //gear leverdb.DOWN
             {
                send(LCTRL, 'G');
             }
