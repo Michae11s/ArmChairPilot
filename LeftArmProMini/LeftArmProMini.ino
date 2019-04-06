@@ -61,7 +61,7 @@ void loop()
          if(i2cBuff.write(packet))
             Serial.println("Buffer Full");
          Serial.print("byte added to buffer: ");
-         Serial.println(change, HEX);
+         Serial.println(packet, HEX);
          Serial.println();
       }
    }
@@ -105,7 +105,7 @@ void requestEvent()
       datum[i]=i2cBuff.read();
 
    Serial.write(datum, len);
-   Serial.println('\n');
+   Serial.println();
 
    Wire.write(datum, len); //dump the message buffer into the i2c bus.
 }
@@ -130,7 +130,7 @@ void receiveEvent(int Many)
 
 }
 
-void etch(uint8_t status) //don't judge me I'm bad at names
+void etch(state status) //don't judge me I'm bad at names
 {
    if (status == CLOSE)
       Serial.println("CLOSE");
