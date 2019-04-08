@@ -242,7 +242,7 @@ void i2c_decode()
                send(LSHFT, 'G');
             break;
          case 6: //flaps Upper half
-            if(status) //Flaps UP
+            if(status == CLOSE) //Flaps UP
             {
                send(LSHFT, 'F');
                Flaps = UP;
@@ -254,7 +254,7 @@ void i2c_decode()
             }
             break;
          case 7: //flaps lower half
-            if(status) //Flaps Full
+            if(status == CLOSE) //Flaps Full
             {
                send(LCTRL, 'F');
                Flaps = FULL;
@@ -266,7 +266,7 @@ void i2c_decode()
             }
             break;
          case 8: //Jett
-            if(status)
+            if(status == CLOSE)
                send(LSHFT, 'J');
             break;
          }
