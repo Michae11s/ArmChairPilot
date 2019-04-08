@@ -1,6 +1,7 @@
 #include <Keyboard.h>
 #include <Wire.h>
 #include <Debounce.h>
+#include <Buzzer.h>
 
 /*
  * Code to utilize a switch board to send keypresses to control DCS
@@ -25,7 +26,6 @@
 #define KEY_DELAY 50
 
 //I2C defines
-#define ADDR      0x20
 #define LEFTARM   0x21
 #define SYNC      0x99
 #define D_MSK  0b11100000
@@ -45,11 +45,12 @@ bool WCon = true;
 uint8_t Flaps = HALF;
 
 debounce<65> db;
+Buzzer<15000> rset;
 
 void setup()
 {
    //start i2c
-   Wire.begin(0x20);
+   Wire.begin();
 
    //start ky emulation
    ky.begin();
@@ -67,15 +68,15 @@ void setup()
    //i2c sync
    sync(LEFTARM);
 
-   //Serial.begin(9600);
-   //Serial.println("start");
+   // Serial.begin(9600);
+   // Serial.println("start");
 }
 
 void loop()
 {
-  //GroundPower
-  if(db.change(GroundPower) == CLOSE)
-  {
+   //GroundPower
+   if(db.change(GroundPower) == CLOSE)
+   {
     if(!GPon)
     {
       ky.write(0x5C); //write \\ coms menu
@@ -98,11 +99,11 @@ void loop()
       ky.write(0xC3); //write F2 disconnect
       GPon=false;
     }
-  }
+   }
 
-  //AirSupply
-  if(db.change(AirSupply) == CLOSE)
-  {
+   //AirSupply
+   if(db.change(AirSupply) == CLOSE)
+   {
     if(!ASon)
     {
       ky.write(0x5C); //write \\ coms menu
@@ -125,11 +126,11 @@ void loop()
       ky.write(0xC3); //write F2 disconnect
       ASon=false;
     }
-  }
+   }
 
-  //wheel chocks
-  if(db.change(WheelChock) == CLOSE)
-  {
+   //wheel chocks
+   if(db.change(WheelChock) == CLOSE)
+   {
     if(!WCon)
     {
       ky.write(0x5C); //write \\ coms menu
@@ -152,19 +153,18 @@ void loop()
       ky.write(0xC3); //write F2 remove
       WCon=false;
     }
-  }
+   }
 
-  //Rearm
-  if(db.change(Rearm) == CLOSE)
-  {
+   //Rearm
+   if(db.change(Rearm) == CLOSE)
+   {
      send(LALT, 0x27); //LALT + '
-  }
-
-  //if(/* Hook */)
+   }
 
 
-  Wire.requestFrom(LEFTARM, 32);
-  i2c_decode();
+   Wire.requestFrom(LEFTARM, 16);
+   i2c_decode();
+   delay(50);
 }
 
 void sync(int address)
@@ -172,7 +172,7 @@ void sync(int address)
    Wire.beginTransmission(address);
    Wire.write(SYNC);
    Wire.endTransmission();
-   Wire.requestFrom(address, 32);
+   Wire.requestFrom(address, 16);
    i2c_decode();
 }
 
@@ -193,55 +193,53 @@ void i2c_decode()
       case (LEFTARM & 0x0F):
          switch(pin)
          {
-         // case /**/: //APU start
-         //    if(status)
-         //       send(LCTRL, 'S');
-         //    break;
-         // case /**/: //MISC START
-         //    if(status)
-         //       send(LALT, 'S');
-         //    break;
-         // case /**/: //L Crank
-         //    if(status)
-         //       send(LCTRL, 'O');
-         //    break;
-         // case /**/: //R Crank
-         //    if(status)
-         //       send(LALT, 'O');
-         //    break;
-         // case /**/: //L FUEL
-         //    if(status)
-         //       send(LCTRL, 'H');
-         //    else
-         //       send(LCTRL, LSHFT, 'H');
-         //    break;
-         // case /**/: //R FUEL
-         //    if(status)
-         //       send(LALT, 'H');
-         //    else
-         //       send(LALT, LSHFT, 'H');
-         //    break;
-         // case /**/: //Master Arm
-         //    if(status)
-         //       send(LALT, 'A');
-         //    else
-         //       send(LCTRL, 'A');
-         //    break;
-         // case /**/: //ECM JETT
-         //    send(LCTRL, 'J');
-         //    break;
-         case 4: //EJETT
-            send(LCTRL, LSHFT, 'J');
+         case 9: //APU start
+            if(status == CLOSE)
+               send(LCTRL, 'S');
+            break;
+         case 10: //MISC START
+            if(status == CLOSE)
+               send(LALT, 'S');
+            break;
+         case 14: //L Crank
+            if(status == CLOSE)
+               send(LCTRL, 'O');
+            break;
+         case 15: //R Crank
+            if(status == CLOSE)
+               send(LALT, 'O');
+            break;
+         case 11: //L FUEL
+            if(status == CLOSE)
+               send(LCTRL, 'H');
+            else
+               send(LCTRL, LSHFT, 'H');
+            break;
+         case 12: //R FUEL
+            if(status == CLOSE)
+               send(LALT, 'H');
+            else
+               send(LALT, LSHFT, 'H');
+            break;
+         case 4: //Master Arm
+            if(status == CLOSE)
+               send(LALT, 'A');
+            else
+               send(LCTRL, 'A');
+            break;
+         case 3: //ECM JETT
+            if(status == CLOSE)
+               send(LCTRL, 'J');
+            break;
+         case 2: //EJETT
+            if(status == CLOSE)
+               send(LCTRL, LSHFT, 'J');
             break;
          case 5: //Gear Lever
-            if(status) //gear leverdb.DOWN
-            {
+            if(status == CLOSE) //gear leverdb.DOWN
                send(LCTRL, 'G');
-            }
             else //gear lever up
-            {
                send(LSHFT, 'G');
-            }
             break;
          case 6: //flaps Upper half
             if(status) //Flaps UP

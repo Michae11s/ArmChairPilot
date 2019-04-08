@@ -88,26 +88,26 @@ void requestEvent()
 
          if(i2cBuff.write(packet))
             Serial.println("Buffer Full");
-         Serial.print("byte added to buffer: ");
+         Serial.print("byte added to buffer: 0x");
          Serial.println(packet, HEX);
          Serial.println();
       }
       sync=false; //clear the flag for the next run
    }
 
-   Serial.println("Sending updates:");
+   //return exactly 16 bytes
+   uint8_t datum[16];
 
-   //have to load the buffer into an array
-   size_t len = i2cBuff.length();
-   uint8_t datum[len];
-
-   for (int i = 0; i < len; i++)
+   for (int i = 0; i < 16; i++)
+   {
       datum[i]=i2cBuff.read();
+   }
 
-   Serial.write(datum, len);
+   Serial.println("Sending update:");
+   Serial.write(datum, 16);
    Serial.println();
 
-   Wire.write(datum, len); //dump the message buffer into the i2c bus.
+   Wire.write(datum, 16);
 }
 
 void receiveEvent(int Many)
