@@ -1,0 +1,35 @@
+10    Hook              Up=CLOSE
+9     light panel mid   UP=OPEN
+8     light panel left  UP=OPEN
+7     TV switch         UP=OPEN
+4     HSD switch        UP=CLOSE
+32    Right top mom UP
+33    Right top mom DOWN
+43    Left top mom up
+35    left top mom DOWN
+31    light panel mom up
+40    light panel mom DOWN
+29    light panel 3 way DOWN
+28    light panel 3 way up
+22    extra mom DOWN
+23    extra mom up
+25    R three way DOWN
+24    R three way up
+27    L three way down
+26    L three way up
+36    HUD 1
+37    HUD 2
+39    HUD 3
+41    HUD 4
+38    HUD 5
+
+53    AUX 1
+50    AUX 2
+48    AUX 3
+46    AUX 4
+52    AUX 5
+51    AUX 6
+44    AUX 7
+47    AUX 8
+49    AUX 9
+45    AUX 10
