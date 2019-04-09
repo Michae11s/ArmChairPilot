@@ -59,6 +59,9 @@
 #define R_TOG_UP  24
 #define R_TOG_DN  25
 
+//ejection
+#define EJECT     43
+
 
 //define keys
 #define LCTRL  0x80
@@ -144,6 +147,27 @@ void setup()
 
 void loop()
 {
+   switch(db.change(EJECT))
+   {
+   case OPEN:
+      Keyboard.press(LCTRL);
+      delay(50);
+      Keyboard.press('e');//1
+      delay(50);
+      Keyboard.release('e');
+      delay(50);
+      Keyboard.press('e');//2
+      delay(50);
+      Keyboard.release('e');
+      delay(50);
+      Keyboard.press('e');//3
+      delay(50);
+      Keyboard.release('e');
+      delay(50);
+      Keyboard.releaseAll();
+
+   }
+
    switch(db.change(AUX1)) //GroundPower on/off
    {
    case CLOSE:
